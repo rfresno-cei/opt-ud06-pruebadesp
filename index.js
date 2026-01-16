@@ -1,62 +1,62 @@
 const express = require('express');
-const { compileFile } = require('pug');
 const app = express();
+const { client, connectDB } = require('./db');
+const { ObjectId } = require('mongodb');
+
+connectDB();
+
+const db = client.db("midb");
+const personajes = db.collection("personajes");
 
 app.use(express.json());
 app.use(express.urlencoded());
 app.set('view engine', 'pug');
 app.set('views', './views');
 
-let bbdd = [
-    { id: 1, name: 'Cloud Strife', job: 'Soldier', weapon: 'Buster sword', level: 25 },
-    { id: 2, name: 'Tifa Lockhart', job: 'Fighter', weapon: 'Leather gloves', level: 22 },
-    { id: 3, name: 'Aerith Gainsborough', job: 'Mage', weapon: 'Magic staff', level: 20 }
-];
-
-app.get('/characters', (req, res) => {
-    res.send(bbdd);
+app.get('/characters', async (req, res) => {
+    const resultado = await personajes.find().toArray();
+    res.send(resultado);
 })
 
-app.get('/characters/:id', (req, res) => {
-    const c = bbdd.find(c => c.id == req.params.id);
-    if (!c) res.sendStatus(404);
-    else res.send(c);
+app.get('/characters/:id', async (req, res) => {
+    const resultado = await personajes.findOne({_id: new ObjectId(req.params.id)});
+    if (!resultado) return res.sendStatus(404);
+    res.send(resultado);
 })
 
-app.post('/characters', (req, res) => {
+app.post('/characters', async (req, res) => {
     const c = req.body;
     if (!c || c == {}) {
         return res.sendStatus(400);
     }
-    const existe = bbdd.find(ch => ch.id == c.id || ch.name == c.name);
+    const existe = await personajes.findOne({name: c.name});
     if (existe) {
         return res.sendStatus(400);
     }
     if (c.level > 99 || c.level < 1) {
         return res.status(400).send('Level must be between 1 and 99');
     }
-    bbdd.push(c);
+    await personajes.insertOne(c);
     res.status(201).send(c);
 })
 
-app.put('/characters/:id', (req, res) => {
-    const existe = bbdd.find(ch => ch.id == req.params.id);
+app.put('/characters/:id', async (req, res) => {
+    const data = req.body;
+    const id = req.params.id;
+    const existe = await personajes.findOne({_id: new ObjectId(id)});
     if (!existe) return res.status(404).send('Character does not exist');
-    const c = req.body;
-    if (!c || c == {}) return res.sendStatus(400);
-    const existe2 = bbdd.find(ch => ch.id == c.id || ch.name == c.name);
-    if (existe2) res.sendStatus(400);
-    if (c.level > 99 || c.level < 1) return res.status(400).send('Level must be between 1 and 99');
-    const posicion = bbdd.findIndex(ch => ch.id == req.params.id);
-    bbdd[posicion] = c;
+    if (!data || data == {}) return res.sendStatus(400);
+    const existe2 = await personajes.findOne({name: data.name});
+    if (existe2) return res.sendStatus(400);
+    if (data.level > 99 || data.level < 1) return res.status(400).send('Level must be between 1 and 99');
+    await personajes.updateOne({_id: new ObjectId(id)}, {$set: data});
     res.sendStatus(204);
 })
 
-app.delete('/characters/:id', (req, res) => {
-    const existe = bbdd.find(ch => ch.id == req.params.id);
-    if (!existe) return res.status(404).send('Character does not exist');
-    const posicion = bbdd.findIndex(ch => ch.id == req.params.id);
-    bbdd.splice(posicion, 1);
+app.delete('/characters/:id', async (req, res) => {
+    const id = req.params.id;
+    const resultado = await personajes.deleteOne({_id: new ObjectId(id)});
+    if (resultado.deletedCount == 0) return res.sendStatus(404);
     res.sendStatus(204);
 })
 
