@@ -1,12 +1,9 @@
 const express = require('express');
 const app = express();
-const { client, connectDB } = require('./db');
-const { ObjectId } = require('mongodb');
+const Character = require('./models/Character');
+const {connectDB} = require('./db');
 
 connectDB();
-
-const db = client.db("midb");
-const personajes = db.collection("personajes");
 
 app.use(express.json());
 app.use(express.urlencoded());
@@ -14,49 +11,48 @@ app.set('view engine', 'pug');
 app.set('views', './views');
 
 app.get('/characters', async (req, res) => {
-    const resultado = await personajes.find().toArray();
+    const resultado = await Character.find();
     res.send(resultado);
 })
 
 app.get('/characters/:id', async (req, res) => {
-    const resultado = await personajes.findOne({_id: new ObjectId(req.params.id)});
+    const resultado = await Character.findById(req.params.id);
     if (!resultado) return res.sendStatus(404);
     res.send(resultado);
 })
 
 app.post('/characters', async (req, res) => {
     const c = req.body;
-    if (!c || c == {}) {
-        return res.sendStatus(400);
-    }
-    const existe = await personajes.findOne({name: c.name});
+    const existe = await Character.findOne({name: c.name});
     if (existe) {
         return res.sendStatus(400);
     }
-    if (c.level > 99 || c.level < 1) {
-        return res.status(400).send('Level must be between 1 and 99');
+    try {
+        const resultado = await Character.create(c);
+        res.status(201).send(resultado);
+    } catch (err) {
+        if (err.name == 'ValidationError') res.status(400).send(err.message);
     }
-    await personajes.insertOne(c);
-    res.status(201).send(c);
 })
 
 app.put('/characters/:id', async (req, res) => {
-    const data = req.body;
-    const id = req.params.id;
-    const existe = await personajes.findOne({_id: new ObjectId(id)});
-    if (!existe) return res.status(404).send('Character does not exist');
-    if (!data || data == {}) return res.sendStatus(400);
-    const existe2 = await personajes.findOne({name: data.name});
-    if (existe2) return res.sendStatus(400);
-    if (data.level > 99 || data.level < 1) return res.status(400).send('Level must be between 1 and 99');
-    await personajes.updateOne({_id: new ObjectId(id)}, {$set: data});
-    res.sendStatus(204);
+    const c = req.body;
+    const existe = await Character.findOne({name: c.name, _id: {$ne: req.params.id}});
+    if (existe) {
+        return res.sendStatus(400);
+    }
+    try {
+        const resultado = await Character.findByIdAndUpdate(req.params.id, {...req.body, $inc: {'__v': 1}}, {runValidators: true});
+        if (!resultado) return res.sendStatus(404);
+        res.sendStatus(204);
+    } catch (err) {
+        if (err.name == 'ValidationError') res.status(400).send(err.message);
+    }
 })
 
 app.delete('/characters/:id', async (req, res) => {
-    const id = req.params.id;
-    const resultado = await personajes.deleteOne({_id: new ObjectId(id)});
-    if (resultado.deletedCount == 0) return res.sendStatus(404);
+    const resultado = await Character.findByIdAndDelete(req.params.id);
+    if (!resultado) return res.sendStatus(404);
     res.sendStatus(204);
 })
 

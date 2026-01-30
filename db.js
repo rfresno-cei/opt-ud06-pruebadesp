@@ -1,14 +1,9 @@
-const { MongoClient } = require("mongodb");
-
-const client = new MongoClient("mongodb://localhost:27017");
+const mongoose = require('mongoose');
 
 async function connectDB() {
-  try {
-    await client.connect();
-    console.log("Conectado a MongoDB");
-  } catch (error) {
-    console.error("Error conectando a MongoDB: " + error);
-  }
+  await mongoose.connect('mongodb://localhost:27017/otradb')
+    .then(() => console.log('Conectado correctamente'))
+    .catch((err) => console.log(err))
 }
 
-module.exports = { client, connectDB };
+module.exports = {connectDB};
