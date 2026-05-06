@@ -31,7 +31,6 @@ jobs:
         env:
           MONGO_URL: mongodb://localhost:27017/test_db
 
-      #- name: Disparar despliegue en Render
-      #  if: github.ref == 'refs/heads/main'
-      #  run: |
-      #    curl -f ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+      - name: Disparar despliegue en Render
+        if: success()
+        run: curl -f ${{ secrets.RENDER_DEPLOY_HOOK_URL }}

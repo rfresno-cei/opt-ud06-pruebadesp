@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "mocha test/finalfantasy.integration.test.js",
     "testunit": "mocha test/finalfantasy.test.js",
     "coveragehtml": "nyc --reporter=html npm test",
