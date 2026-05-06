@@ -1,0 +1,94 @@
+openapi: 3.1.0
+info:
+  title: Mi API chula
+  summary: Esta es mi API favorita
+  description: Esta es una pequeña API para enseñar OAS en clase
+  version: 1.0.0
+  contact:
+    name: Pepito Corp
+    url: https://pepitocorp.com
+    email: support@pepitocorp.com
+  license:
+    name: MIT
+    url: http://mit.com/license
+servers:
+  - url: https://miservidor.com
+  - url: http://localhost:8080
+components:
+  schemas:
+    Procesador:
+      type: object
+      properties:
+        id:
+          type: integer
+        frecuencia:
+          type: number
+        modelo:
+          type: string
+        marca:
+          type: string
+          enum:
+            - amd
+            - intel
+            - apple
+            - qualcomm
+paths:
+  /procesadores:
+    get:
+      summary: Obtiene todos los procesadores
+      description: Esta ruta obtiene todos los procesadores de la API
+      parameters:
+        - name: sort
+          in: query
+          description: Campo para ordenar
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Todo OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Procesador'
+    post:
+      summary: Añade un procesador
+      description: Esta ruta añade un procesador a la API
+      requestBody:
+        description: El procesador a añadir
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Procesador'
+        required: true
+      responses:
+        '201':
+          description: Procesador creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Procesador'
+        '400':
+          description: Mal formateado
+  /procesadores/{id}:
+    get:
+      summary: Obtiene un procesador
+      description: Esta ruta devuelve un procesador de la API, un saludo
+      parameters:
+        - name: id
+          in: path
+          description: ID del procesador
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Todo OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Procesador'
+        '404':
+          description: No existe el procesador

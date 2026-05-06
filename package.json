@@ -4,14 +4,24 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test/finalfantasy.integration.test.js",
+    "testunit": "mocha test/finalfantasy.test.js",
+    "coveragehtml": "nyc --reporter=html npm test",
+    "coverage": "nyc npm test"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "chai": "^6.2.2",
     "express": "^5.1.0",
+    "mocha": "^11.7.5",
     "mongodb": "^7.0.0",
     "mongoose": "^9.1.5",
-    "pug": "^3.0.3"
+    "nyc": "^17.1.0",
+    "pug": "^3.0.3",
+    "sinon": "^21.0.1",
+    "supertest": "^7.2.2",
+    "swagger-ui-express": "^5.0.1",
+    "yaml": "^2.8.2"
   }
 }
