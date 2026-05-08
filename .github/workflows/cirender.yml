@@ -27,4 +27,4 @@ jobs:
           MONGO_URL: mongodb://localhost:27017/test
       - name: Desplegar en Render
         if: success()
-        run: curl -f ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: curl -f ${{ secrets.RENDER_DEPLY_HOOK }}
