@@ -1,11 +1,26 @@
 const express = require('express');
 const app = express();
 const Character = require('./models/Character');
+const morgan = require('morgan');
 
 app.use(express.json());
 app.use(express.urlencoded());
 app.set('view engine', 'pug');
 app.set('views', './views');
+
+app.use(morgan(process.env.LOG_MODE || 'dev'));
+
+app.get('/health', async (req, res) => {
+    try {
+        await Character.find();
+        res.status(200).json({
+            uptime: process.uptime(),
+            time: Date.now()
+        });
+    } catch (e) {
+        res.status(503).send(e);
+    }
+})
 
 app.get('/characters', async (req, res) => {
     const resultado = await Character.find();

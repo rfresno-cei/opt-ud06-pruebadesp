@@ -12,6 +12,6 @@ const parsed = YAML.parse(file);
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(parsed));
 
-app.listen(process.env.PORT, () => {
+app.listen(process.env.PORT || 8080, () => {
     console.log('Servidor arrancado');
 })
